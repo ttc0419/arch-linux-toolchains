@@ -1,0 +1,24 @@
+_target=arm-linux-gnueabihf
+pkgname=$_target-linux-api-headers
+pkgver=4.1.27
+pkgrel=1
+pkgdesc="Kernel headers sanitized for use in userspace ($_target)"
+arch=(any)
+url='https://www.kernel.org'
+license=(GPL2)
+makedepends=(gcc make)
+
+source=(https://mirrors.ustc.edu.cn/kernel.org/linux/kernel/v4.x/linux-$pkgver.tar.xz)
+sha256sums=(SKIP)
+
+build() {
+	cd linux-$pkgver
+	make ARCH=${_target%%-*} mrproper
+	make ARCH=${_target%%-*} headers_check
+}
+
+package() {
+	cd linux-$pkgver
+	make ARCH=${_target%%-*} INSTALL_HDR_PATH="$pkgdir/usr/$_target/" headers_install
+	find "$pkgdir" \( -name .install -or -name ..install.cmd \) -delete
+}

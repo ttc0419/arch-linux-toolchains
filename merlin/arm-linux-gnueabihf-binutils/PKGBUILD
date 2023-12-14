@@ -1,0 +1,36 @@
+_target=arm-linux-gnueabihf
+pkgname=$_target-binutils
+pkgver=2.41
+pkgrel=1
+pkgdesc='A set of programs to assemble and manipulate binary and object files for the ARM32 hard float target'
+arch=(x86_64)
+url='https://www.gnu.org/software/binutils/'
+license=(GPL)
+makedepends=(make gcc)
+depends=(zlib)
+
+source=(https://mirrors.sjtug.sjtu.edu.cn/gnu/binutils/binutils-$pkgver.tar.xz)
+sha256sums=(SKIP)
+
+options=(lto)
+
+build() {
+	cd binutils-$pkgver
+	./configure \
+		--disable-debug \
+		--disable-multilib \
+		--disable-nls \
+		--enable-deterministic-archives \
+		--enable-ld=default \
+		--enable-plugins \
+		--prefix=/usr \
+		--target=$_target
+	make
+}
+
+package() {
+	cd binutils-$pkgver
+	make DESTDIR="$pkgdir" install
+	rm -rf "$pkgdir"/usr/share
+	rm -rf "$pkgdir"/usr/lib
+}

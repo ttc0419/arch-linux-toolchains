@@ -1,0 +1,62 @@
+_target=arm-linux-gnueabihf
+pkgname=$_target-glibc
+pkgver=2.22
+pkgrel=1
+pkgdesc="GNU C Library ($_target)"
+arch=('any')
+url="https://www.gnu.org/software/libc/"
+license=(GPL LGPL)
+makedepends=(bison make python)
+depends=("$_target-linux-api-headers")
+
+source=(https://mirrors.sjtug.sjtu.edu.cn/gnu/glibc/glibc-$pkgver.tar.xz)
+sha256sums=(SKIP)
+
+options=(!buildflags)
+
+build() {
+	mkdir -p glibc-build
+	cd glibc-build
+
+	echo "slibdir=/lib" >> configparms
+	echo "rtlddir=/lib" >> configparms
+	echo "sbindir=/bin" >> configparms
+	echo "rootsbindir=/bin" >> configparms
+
+	export BUILD_CC=gcc
+	export CC=$_target-gcc
+	export CXX=$_target-g++
+	export AR=$_target-ar
+	export RANLIB=$_target-ranlib
+
+	"$srcdir/glibc-$pkgver/configure" \
+		--libdir=/lib \
+		--libexecdir=/lib \
+		--prefix=/ \
+		--with-headers=/usr/$_target/include \
+		--enable-add-ons \
+		--enable-bind-now \
+		--enable-lock-elision \
+		--enable-kernel=4.1 \
+		--disable-multi-arch \
+		--enable-stack-protector=strong \
+		--enable-stackguard-randomization \
+		--disable-profile \
+		--disable-werror \
+		--target=$_target \
+		--host=$_target \
+		--build=$CHOST
+
+	echo "build-programs=no" >> configparms
+	make
+}
+
+package() {
+	cd glibc-build
+	make install_root="$pkgdir/usr/$_target" install
+
+	rm -rf "$pkgdir/usr/$_target/"{bin,sbin,etc,share,var}
+
+	mkdir -p "$pkgdir/usr/$_target/usr"
+	ln -s ../{include,lib} "$pkgdir/usr/$_target/usr"
+}

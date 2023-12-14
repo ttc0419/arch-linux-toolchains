@@ -1,0 +1,7 @@
+*tar*
+a.out
+
+.idea/
+pkg/
+src/
+build/

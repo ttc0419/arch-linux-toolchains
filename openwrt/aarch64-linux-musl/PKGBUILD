@@ -1,0 +1,31 @@
+_target=aarch64-linux-gnu
+pkgname=$_target-musl
+pkgver=1.2.4
+pkgrel=1
+pkgdesc='Lightweight implementation of C standard library'
+arch=(any)
+url='https://musl.libc.org'
+license=('MIT')
+conflicts=($_target-glibc)
+provides=($_target-glibc)
+depends=('aarch64-linux-gnu-gcc')
+source=(https://musl.libc.org/releases/musl-${pkgver}.tar.gz)
+sha256sums=(SKIP)
+
+options=('!buildflags')
+
+build() {
+	cd musl-$pkgver
+	./configure \
+		--disable-wrapper \
+		--exec-prefix=/usr \
+		--prefix=/usr/$_target \
+		--target=$_target
+	make
+}
+
+package() {
+	cd musl-$pkgver
+	make DESTDIR="$pkgdir" install
+	rm -rf "$pkgdir"/lib
+}
